@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>NEXUS // Command Deck</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #05060f;
+    --bg-2: #0a0d1f;
+    --neon: #00f0ff;
+    --neon-2: #ff2bd6;
+    --neon-3: #b6ff3c;
+    --text: #d9e8ff;
+    --muted: #6b7fa8;
+    --panel: rgba(10, 18, 38, 0.55);
+    --border: rgba(0, 240, 255, 0.25);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Share Tech Mono', monospace;
+    overflow: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 20% 10%, rgba(0, 240, 255, 0.15), transparent 50%),
+      radial-gradient(ellipse at 80% 90%, rgba(255, 43, 214, 0.12), transparent 55%),
+      linear-gradient(180deg, var(--bg), var(--bg-2));
+    z-index: -2;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0, 240, 255, 0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 240, 255, 0.06) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+    animation: gridShift 12s linear infinite;
+    z-index: -1;
+  }
+
+  @keyframes gridShift {
+    from { background-position: 0 0, 0 0; }
+    to { background-position: 48px 48px, 48px 48px; }
+  }
+
+  .scanline {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent 3px,
+      rgba(255, 255, 255, 0.015) 3px,
+      rgba(255, 255, 255, 0.015) 4px
+    );
+    z-index: 999;
+    mix-blend-mode: overlay;
+  }
+
+  .sweep {
+    position: fixed;
+    left: 0; right: 0;
+    height: 120px;
+    background: linear-gradient(180deg, transparent, rgba(0, 240, 255, 0.08), transparent);
+    pointer-events: none;
+    z-index: 998;
+    animation: sweep 6s linear infinite;
+  }
+
+  @keyframes sweep {
+    0%   { top: -120px; }
+    100% { top: 100vh; }
+  }
+
+  .app {
+    display: grid;
+    grid-template-rows: 60px 1fr 40px;
+    grid-template-columns: 220px 1fr 280px;
+    grid-template-areas:
+      "header header header"
+      "sidebar main aside"
+      "footer footer footer";
+    height: 100vh;
+    gap: 14px;
+    padding: 14px;
+  }
+
+  header.top {
+    grid-area: header;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    backdrop-filter: blur(6px);
+    position: relative;
+    overflow: hidden;
+  }
+
+  header.top::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(0, 240, 255, 0.08), transparent);
+    animation: shimmer 4s linear infinite;
+  }
+
+  @keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+
+  .logo {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 800;
+    font-size: 20px;
+    letter-spacing: 6px;
+    color: var(--neon);
+    text-shadow: 0 0 8px var(--neon), 0 0 20px rgba(0, 240, 255, 0.5);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .logo .dot {
+    width: 10px; height: 10px;
+    background: var(--neon-3);
+    border-radius: 50%;
+    box-shadow: 0 0 12px var(--neon-3);
+    animation: pulse 1.6s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.3); opacity: 0.6; }
+  }
+
+  .top-meta {
+    display: flex;
+    gap: 28px;
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 2px;
+  }
+
+  .top-meta span b {
+    color: var(--text);
+    font-weight: normal;
+    margin-left: 6px;
+  }
+
+  nav.sidebar {
+    grid-area: sidebar;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 20px 0;
+    backdrop-filter: blur(6px);
+  }
+
+  nav.sidebar h4 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--muted);
+    padding: 0 20px;
+    margin-bottom: 12px;
+  }
+
+  nav.sidebar ul { list-style: none; margin-bottom: 24px; }
+
+  nav.sidebar li {
+    padding: 12px 20px;
+    font-size: 13px;
+    letter-spacing: 2px;
+    color: var(--text);
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s ease;
+    border-left: 2px solid transparent;
+  }
+
+  nav.sidebar li:hover {
+    color: var(--neon);
+    background: rgba(0, 240, 255, 0.06);
+    border-left-color: var(--neon);
+  }
+
+  nav.sidebar li.active {
+    color: var(--neon);
+    background: rgba(0, 240, 255, 0.1);
+    border-left-color: var(--neon);
+    text-shadow: 0 0 6px var(--neon);
+  }
+
+  nav.sidebar li::before {
+    content: '>';
+    margin-right: 10px;
+    color: var(--neon-2);
+  }
+
+  main.main {
+    grid-area: main;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    gap: 14px;
+    overflow: hidden;
+  }
+
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+  }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 18px;
+    backdrop-filter: blur(6px);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before,
+  .card::after {
+    content: '';
+    position: absolute;
+    width: 14px; height: 14px;
+    border: 1px solid var(--neon);
+  }
+
+  .card::before { top: 4px; left: 4px; border-right: none; border-bottom: none; }
+  .card::after  { bottom: 4px; right: 4px; border-left: none; border-top: none; }
+
+  .card .label {
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .card .value {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 30px;
+    font-weight: 600;
+    color: var(--neon);
+    text-shadow: 0 0 10px rgba(0, 240, 255, 0.7);
+  }
+
+  .card .delta { font-size: 11px; margin-top: 6px; color: var(--neon-3); }
+  .card .delta.down { color: var(--neon-2); }
+
+  .panel-wide {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 20px;
+    position: relative;
+    backdrop-filter: blur(6px);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .panel-wide h3 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 12px;
+    letter-spacing: 4px;
+    color: var(--text);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .panel-wide h3::before {
+    content: '';
+    width: 8px; height: 8px;
+    background: var(--neon);
+    box-shadow: 0 0 8px var(--neon);
+  }
+
+  .chart {
+    flex: 1;
+    min-height: 180px;
+    width: 100%;
+  }
+
+  aside.aside {
+    grid-area: aside;
+    display: grid;
+    grid-template-rows: auto 1fr;
+    gap: 14px;
+    overflow: hidden;
+  }
+
+  .radar-wrap {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 18px;
+    backdrop-filter: blur(6px);
+    text-align: center;
+  }
+
+  .radar {
+    width: 100%;
+    aspect-ratio: 1;
+    max-height: 220px;
+    margin: 0 auto;
+  }
+
+  .log {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 16px;
+    backdrop-filter: blur(6px);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .log h3 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    margin-bottom: 10px;
+    color: var(--neon);
+  }
+
+  .log ul {
+    list-style: none;
+    font-size: 11px;
+    line-height: 1.7;
+    overflow-y: auto;
+    flex: 1;
+  }
+
+  .log li {
+    padding: 4px 0;
+    color: var(--text);
+    border-bottom: 1px dashed rgba(0, 240, 255, 0.1);
+    opacity: 0;
+    animation: fadeIn 0.4s forwards;
+  }
+
+  @keyframes fadeIn {
+    to { opacity: 1; }
+  }
+
+  .log li .t { color: var(--muted); margin-right: 8px; }
+  .log li .tag { color: var(--neon-2); margin-right: 6px; }
+  .log li.ok .tag { color: var(--neon-3); }
+  .log li.warn .tag { color: #ffb347; }
+
+  footer.foot {
+    grid-area: footer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    backdrop-filter: blur(6px);
+  }
+
+  footer.foot .status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--neon-3);
+  }
+
+  footer.foot .status::before {
+    content: '';
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--neon-3);
+    box-shadow: 0 0 8px var(--neon-3);
+    animation: pulse 1.6s ease-in-out infinite;
+  }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  @media (max-width: 1000px) {
+    .app {
+      grid-template-columns: 1fr;
+      grid-template-rows: 60px auto auto auto 40px;
+      grid-template-areas:
+        "header"
+        "sidebar"
+        "main"
+        "aside"
+        "footer";
+      height: auto;
+      overflow-y: auto;
+    }
+    html, body { overflow: auto; }
+    .stat-row { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+<div class="scanline"></div>
+<div class="sweep"></div>
+
+<div class="app">
+  <header class="top">
+    <div class="logo"><span class="dot"></span>N E X U S // COMMAND DECK</div>
+    <div class="top-meta">
+      <span>OP <b id="op">0x7F3A-9C</b></span>
+      <span>SEC <b>LVL-9</b></span>
+      <span>UTC <b id="clock">--:--:--</b></span>
+    </div>
+  </header>
+
+  <nav class="sidebar">
+    <h4>// CORE</h4>
+    <ul>
+      <li class="active">OVERVIEW</li>
+      <li>SYSTEMS</li>
+      <li>NETWORK</li>
+      <li>TELEMETRY</li>
+    </ul>
+    <h4>// OPS</h4>
+    <ul>
+      <li>MISSIONS</li>
+      <li>DEPLOY</li>
+      <li>ARCHIVE</li>
+    </ul>
+    <h4>// USER</h4>
+    <ul>
+      <li>PROFILE</li>
+      <li>SETTINGS</li>
+    </ul>
+  </nav>
+
+  <main class="main">
+    <div class="stat-row">
+      <div class="card">
+        <div class="label">// CPU LOAD</div>
+        <div class="value" id="v-cpu">42</div>
+        <div class="delta">+2.1% STABLE</div>
+      </div>
+      <div class="card">
+        <div class="label">// UPLINK</div>
+        <div class="value" id="v-up">998</div>
+        <div class="delta">MB/s NOMINAL</div>
+      </div>
+      <div class="card">
+        <div class="label">// NODES</div>
+        <div class="value" id="v-nodes">1287</div>
+        <div class="delta">+14 ONLINE</div>
+      </div>
+      <div class="card">
+        <div class="label">// THREAT</div>
+        <div class="value" id="v-threat" style="color: var(--neon-2); text-shadow: 0 0 10px var(--neon-2);">LOW</div>
+        <div class="delta down">0 INTRUSIONS</div>
+      </div>
+    </div>
+
+    <div class="panel-wide">
+      <h3>SIGNAL FLUX / LIVE</h3>
+      <svg class="chart" id="chart" viewBox="0 0 800 220" preserveAspectRatio="none"></svg>
+    </div>
+
+    <div class="panel-wide" style="flex: 0 0 auto;">
+      <h3>SYSTEM BUS</h3>
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+        <div>
+          <div style="font-size: 10px; color: var(--muted); letter-spacing: 2px;">MEMORY</div>
+          <div style="height: 6px; background: rgba(0,240,255,0.1); margin-top: 6px; border-radius: 2px; overflow: hidden;">
+            <div style="height: 100%; width: 64%; background: linear-gradient(90deg, var(--neon), var(--neon-2)); box-shadow: 0 0 10px var(--neon);"></div>
+          </div>
+        </div>
+        <div>
+          <div style="font-size: 10px; color: var(--muted); letter-spacing: 2px;">STORAGE</div>
+          <div style="height: 6px; background: rgba(0,240,255,0.1); margin-top: 6px; border-radius: 2px; overflow: hidden;">
+            <div style="height: 100%; width: 38%; background: linear-gradient(90deg, var(--neon-3), var(--neon)); box-shadow: 0 0 10px var(--neon-3);"></div>
+          </div>
+        </div>
+        <div>
+          <div style="font-size: 10px; color: var(--muted); letter-spacing: 2px;">POWER</div>
+          <div style="height: 6px; background: rgba(0,240,255,0.1); margin-top: 6px; border-radius: 2px; overflow: hidden;">
+            <div style="height: 100%; width: 82%; background: linear-gradient(90deg, var(--neon-2), var(--neon-3)); box-shadow: 0 0 10px var(--neon-2);"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <aside class="aside">
+    <div class="radar-wrap">
+      <h3 style="font-family: 'Orbitron', sans-serif; font-size: 11px; letter-spacing: 3px; color: var(--neon); margin-bottom: 10px;">SECTOR SCAN</h3>
+      <svg class="radar" viewBox="0 0 200 200">
+        <defs>
+          <radialGradient id="rg">
+            <stop offset="0%" stop-color="rgba(0,240,255,0.4)"/>
+            <stop offset="100%" stop-color="rgba(0,240,255,0)"/>
+          </radialGradient>
+          <linearGradient id="sweepGrad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="rgba(0,240,255,0)"/>
+            <stop offset="100%" stop-color="rgba(0,240,255,0.6)"/>
+          </linearGradient>
+        </defs>
+        <circle cx="100" cy="100" r="95" fill="url(#rg)" stroke="var(--neon)" stroke-opacity="0.4"/>
+        <circle cx="100" cy="100" r="65" fill="none" stroke="var(--neon)" stroke-opacity="0.25"/>
+        <circle cx="100" cy="100" r="35" fill="none" stroke="var(--neon)" stroke-opacity="0.25"/>
+        <line x1="100" y1="5" x2="100" y2="195" stroke="var(--neon)" stroke-opacity="0.15"/>
+        <line x1="5" y1="100" x2="195" y2="100" stroke="var(--neon)" stroke-opacity="0.15"/>
+        <g id="blips"></g>
+        <path id="sweepArm" d="M100,100 L100,5 A95,95 0 0,1 195,100 Z" fill="url(#sweepGrad)" opacity="0.5">
+          <animateTransform attributeName="transform" type="rotate" from="0 100 100" to="360 100 100" dur="4s" repeatCount="indefinite"/>
+        </path>
+        <circle cx="100" cy="100" r="3" fill="var(--neon)"/>
+      </svg>
+    </div>
+
+    <div class="log">
+      <h3>// EVENT FEED</h3>
+      <ul id="log"></ul>
+    </div>
+  </aside>
+
+  <footer class="foot">
+    <div class="status">LINK STABLE / ENCRYPTED CHANNEL</div>
+    <div>NEXUS v4.7.1 // BUILD 2026.04.20</div>
+    <div>PING <span id="ping">14</span>ms</div>
+  </footer>
+</div>
+
+<script>
+  // Clock
+  const clock = document.getElementById('clock');
+  setInterval(() => {
+    const d = new Date();
+    clock.textContent = d.toISOString().substr(11, 8);
+  }, 1000);
+
+  // Stat jitter
+  const jitter = (id, base, range, fmt = (v) => Math.round(v)) => {
+    const el = document.getElementById(id);
+    setInterval(() => {
+      const v = base + (Math.random() - 0.5) * range;
+      el.textContent = fmt(v);
+    }, 1500);
+  };
+  jitter('v-cpu', 42, 10);
+  jitter('v-up', 998, 80);
+  jitter('v-nodes', 1287, 20);
+  document.getElementById('ping').textContent = 14;
+  setInterval(() => {
+    document.getElementById('ping').textContent = Math.round(10 + Math.random() * 20);
+  }, 2000);
+
+  // Live chart
+  const chart = document.getElementById('chart');
+  const W = 800, H = 220;
+  const points = Array.from({ length: 60 }, () => H / 2 + (Math.random() - 0.5) * 60);
+
+  function drawChart() {
+    points.shift();
+    points.push(Math.max(20, Math.min(H - 20, points[points.length - 1] + (Math.random() - 0.5) * 40)));
+    const step = W / (points.length - 1);
+    const d = points.map((p, i) => `${i === 0 ? 'M' : 'L'}${(i * step).toFixed(1)},${p.toFixed(1)}`).join(' ');
+    const area = d + ` L${W},${H} L0,${H} Z`;
+    chart.innerHTML = `
+      <defs>
+        <linearGradient id="lg" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="rgba(0,240,255,0.4)"/>
+          <stop offset="100%" stop-color="rgba(0,240,255,0)"/>
+        </linearGradient>
+      </defs>
+      <g stroke="rgba(0,240,255,0.08)">
+        ${[0.25, 0.5, 0.75].map(y => `<line x1="0" y1="${H*y}" x2="${W}" y2="${H*y}"/>`).join('')}
+      </g>
+      <path d="${area}" fill="url(#lg)"/>
+      <path d="${d}" fill="none" stroke="#00f0ff" stroke-width="1.5" style="filter: drop-shadow(0 0 4px #00f0ff);"/>
+    `;
+  }
+  drawChart();
+  setInterval(drawChart, 600);
+
+  // Radar blips
+  const blips = document.getElementById('blips');
+  function spawnBlips() {
+    let html = '';
+    for (let i = 0; i < 6; i++) {
+      const r = 15 + Math.random() * 80;
+      const a = Math.random() * Math.PI * 2;
+      const x = 100 + Math.cos(a) * r;
+      const y = 100 + Math.sin(a) * r;
+      html += `<circle cx="${x}" cy="${y}" r="2.5" fill="#b6ff3c" opacity="0">
+        <animate attributeName="opacity" values="1;0" dur="3s" begin="${Math.random() * 3}s" repeatCount="indefinite"/>
+      </circle>`;
+    }
+    blips.innerHTML = html;
+  }
+  spawnBlips();
+  setInterval(spawnBlips, 8000);
+
+  // Event log
+  const logEl = document.getElementById('log');
+  const events = [
+    { t: 'ok',   msg: 'Handshake complete w/ node 0x42' },
+    { t: 'info', msg: 'Packet burst received: 2.4MB' },
+    { t: 'ok',   msg: 'Integrity check passed' },
+    { t: 'warn', msg: 'Anomaly in sector 7G' },
+    { t: 'info', msg: 'Encryption key rotated' },
+    { t: 'ok',   msg: 'Node cluster online' },
+    { t: 'info', msg: 'Telemetry sync @ 120Hz' },
+    { t: 'warn', msg: 'Latency spike detected' },
+    { t: 'ok',   msg: 'Firewall rules updated' },
+    { t: 'info', msg: 'Channel rerouted via relay-3' },
+  ];
+  function pushLog() {
+    const e = events[Math.floor(Math.random() * events.length)];
+    const now = new Date().toISOString().substr(11, 8);
+    const li = document.createElement('li');
+    li.className = e.t;
+    li.innerHTML = `<span class="t">${now}</span><span class="tag">[${e.t.toUpperCase()}]</span>${e.msg}`;
+    logEl.prepend(li);
+    while (logEl.children.length > 20) logEl.removeChild(logEl.lastChild);
+  }
+  for (let i = 0; i < 8; i++) pushLog();
+  setInterval(pushLog, 1800);
+</script>
+</body>
+</html>
